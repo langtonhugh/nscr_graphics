@@ -72,7 +72,7 @@ ggplot() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
   scale_y_continuous(breaks = c(12, 29), labels = c("10%", "30%"), limits = c(10, 35)) +
   labs(x = NULL, y = NULL, title = "Citizen satisfaction with police response times",
-       subtitle = "Percentage strongly agreeing with the statement: 'The police don't come quickly when you call them'",
+       subtitle = "Percentage (strongly) agreeing with the statement: 'The police don't come quickly when you call them'",
        caption = "\n No data collected in 2018")
 
 # Save.
