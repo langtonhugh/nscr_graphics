@@ -10,7 +10,7 @@ library(purrr)
 library(ggplot2)
 
 # TOC.
-cbs_get_catalogs()
+# cbs_get_catalogs()
 
 # Search.
 politie_df <- cbs_search("Politie")
