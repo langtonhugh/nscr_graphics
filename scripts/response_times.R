@@ -8,9 +8,11 @@ library(haven)
 library(forcats)
 library(purrr)
 library(ggplot2)
+library(png)
+library(cowplot)
 
 # TOC.
-cbs_get_catalogs()
+# cbs_get_catalogs()
 
 # Search.
 politie_df <- cbs_search("Politie")
@@ -60,8 +62,7 @@ citpol_pd_df <- citpol_pd_df %>%
   mutate(regio_naam = fct_relevel(regio_naam, as.character(region_order)))
   
 # Test plot.
-ggplot() + 
-  theme_minimal() +
+response_gg <- ggplot() + 
   geom_ribbon(data = filter(citpol_pd_df, str_detect(regio, "RE")),
               mapping = aes(x = perioden, group  = regio_naam,
                             ymax = pol_quick_call_est+pol_quick_call_ci, ymin = pol_quick_call_est-pol_quick_call_ci),
@@ -69,13 +70,30 @@ ggplot() +
   geom_line(data = filter(citpol_pd_df, str_detect(regio, "RE")),
             mapping = aes(x = perioden, y = pol_quick_call_est, group  = regio_naam), col = "#B1005D") +
   facet_wrap(~regio_naam, nrow = 2) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
   scale_y_continuous(breaks = c(12, 29), labels = c("10%", "30%"), limits = c(10, 35)) +
-  labs(x = NULL, y = NULL, title = "Citizen satisfaction with police response times",
+  labs(x = NULL, y = NULL,
+       title = "Citizen satisfaction with police response times",
        subtitle = "Percentage (strongly) agreeing with the statement: 'The police don't come quickly when you call them'",
-       caption = "\n No data collected in 2018")
+       caption = "No data collected in 2018 | Author: Samuel Langton") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, size = 12),
+        axis.text.y = element_text(size = 12),
+        strip.text = element_text(size = 14, margin = margin(10,10,10,10)),
+        plot.title = element_text(size = 18, hjust = 0),
+        plot.subtitle = element_text(size = 14, hjust = 0, margin = margin(0,0,30,0)),
+        plot.caption = element_text(size = 10, margin = margin(30,0,0,0)),
+        plot.background = element_rect(fill = "snow"),
+        plot.margin = margin(50,50,50,50))
+
+# Add logo.
+nscr_logo <- readPNG("img/nscr_logo_snow.png")
+
+full_plot <- ggdraw() +
+  draw_plot(response_gg) +
+  draw_image(nscr_logo, x = 0.35, y = 0.42, scale = 0.2)
 
 # Save.
-ggsave(filename = "visuals/police_response_satisfaction_agree.png", height = 12, width = 22, unit = "cm")
+ggsave(filename = "visuals/police_response_satisfaction_agree.png",
+       height = 29.7, width = 42, unit = "cm")
 
          
