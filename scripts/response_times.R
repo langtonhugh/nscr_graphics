@@ -62,7 +62,7 @@ citpol_pd_df <- citpol_pd_df %>%
   mutate(regio_naam = fct_relevel(regio_naam, as.character(region_order)))
   
 # Test plot.
-response_gg <- ggplot() + 
+main_plot <- ggplot() + 
   geom_ribbon(data = filter(citpol_pd_df, str_detect(regio, "RE")),
               mapping = aes(x = perioden, group  = regio_naam,
                             ymax = pol_quick_call_est+pol_quick_call_ci, ymin = pol_quick_call_est-pol_quick_call_ci),
@@ -71,29 +71,48 @@ response_gg <- ggplot() +
             mapping = aes(x = perioden, y = pol_quick_call_est, group  = regio_naam), col = "#B1005D") +
   facet_wrap(~regio_naam, nrow = 2) +
   scale_y_continuous(breaks = c(12, 29), labels = c("10%", "30%"), limits = c(10, 35)) +
-  labs(x = NULL, y = NULL,
-       title = "Citizen satisfaction with police response times",
-       subtitle = "Percentage (strongly) agreeing with the statement: 'The police don't come quickly when you call them'",
-       caption = "No data collected in 2018 | Author: Samuel Langton") +
+  labs(x = NULL, y = NULL) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, size = 12),
         axis.text.y = element_text(size = 12),
+        axis.title.y = element_text(size = 12, margin = margin(0,20,0,0)),
+        axis.title.x = element_text(size = 12, margin = margin(20,0,0,0)),
         strip.text = element_text(size = 14, margin = margin(10,10,10,10)),
-        plot.title = element_text(size = 18, hjust = 0),
-        plot.subtitle = element_text(size = 14, hjust = 0, margin = margin(0,0,30,0)),
-        plot.caption = element_text(size = 10, margin = margin(30,0,0,0)),
-        plot.background = element_rect(fill = "snow"),
-        plot.margin = margin(50,50,50,50))
+        legend.title = element_text(size = 14),
+        legend.text  = element_text(size = 10) )
+        # plot.background = element_rect(fill = "snow"),
+        # plot.margin = margin(50,50,50,50))
 
 # Add logo.
 nscr_logo <- readPNG("img/nscr_logo_snow.png")
 
 full_plot <- ggdraw() +
-  draw_plot(response_gg) +
-  draw_image(nscr_logo, x = 0.35, y = 0.42, scale = 0.2)
+  # Plot the graphic.
+  draw_plot(main_plot) +
+  # Update the theme.
+  theme(plot.background = element_rect(fill = "snow"),
+        plot.margin = margin(t = 150, r = 50, b = 100, l = 50)) +
+  # Add the NSCR logo.
+  draw_image(nscr_logo, x = 0.35, y = 0.65, scale = 0.25) +
+  # Add the main title.
+  draw_text(text = "Citizen satisfaction with police response times",
+            x = -0.01, y = 1.17, size = 24, hjust = 0) +
+  # Add the subtitle.
+  draw_text(text = "Percentage (strongly) agreeing with the statement: 'The police don't come quickly when you call them'",
+            x = -0.01, y = 1.13, size = 16, hjust = 0) +
+  # Add the caption in the bottom right.
+  draw_text(text = "No data collected in 2018 | State the data source | Author: Samuel Langton",
+            x = 0.68, # Use 0.72 if you have a legend. Or, adjust as appropriate.
+            y = -0.1, size = 10, hjust = 0) 
+
+# full_plot <- ggdraw() +
+#   draw_plot(main_plot) +
+#   theme(plot.background = element_rect(fill = "snow"),
+#     plot.margin = margin(t = 150, r = 50, b = 100, l = 50)) +
+#   draw_image(nscr_logo, x = 0.35, y = 0.65, scale = 0.2) 
 
 # Save.
-ggsave(filename = "visuals/police_response_satisfaction_agree.png",
+ggsave(filename = "visuals/police_response_satisfaction_agree.svg",
        height = 29.7, width = 42, unit = "cm")
 
          
