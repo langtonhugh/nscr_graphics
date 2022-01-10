@@ -1,6 +1,7 @@
 # Load libraries.
 library(readr)
 library(dplyr)
+library(tidyr)
 library(stringr)
 library(ggplot2)
 
@@ -20,6 +21,7 @@ brew_df <- star_df %>%
 
 # Quick clean for the plot.
 big_ones_df <- star_df %>%
+  select(product_name, size, milk, whip, calories:trans_fat_g) %>% 
   filter(size == "grande") %>% 
   mutate(whip_char = as.character(whip),
          milk_labs = recode(milk,
@@ -28,9 +30,9 @@ big_ones_df <- star_df %>%
                             `2` = "2% fat",
                             `3` = "soy",
                             `4` = "coconut",
-                            `5` = "whole"))
+                            `5` = "whole")) # These categories are on the tt git page.
   
-# What in the relationship between calories and cholestrol?
+# What in the relationship between calories and fat?
 my_plot_gg <- ggplot(data = big_ones_df) +
   geom_point(mapping = aes(x = total_fat_g, y = calories, fill = whip_char),
              size = 2, alpha = 0.8, pch = 21, colour = "black") +
