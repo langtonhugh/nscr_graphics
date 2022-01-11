@@ -50,5 +50,5 @@ my_plot_gg <- ggplot(data = big_ones_df) +
         plot.caption = element_text(size = 4))
 
 # Save.
-ggsave(my_plot_gg, file = "visuals/starbucks_plot.png",
+ggsave(my_plot_gg, file = "C:/Users/langt/Documents/GitHub/nscr_graphics/visuals/starbucks_plot.png",
        height = 12, width = 12, unit = "cm")
