@@ -13,13 +13,17 @@ sum(is.na(star_df))
 names(star_df)
 
 # Frequency count.
-table(star_df$whip) # normal way
 
-freq_df <- star_df %>% # tidyverse way
+# Base R way.
+table(star_df$whip) 
+
+# Grouping way.
+star_df %>%
   group_by(whip) %>% 
   tally() 
 
-is_grouped_df(freq_df)
+# Ideal way (thanks Wim!).
+count(star_df, whip)
 
 # Basic cleaning.
 star_clean_df <- star_df %>%
@@ -29,13 +33,3 @@ star_clean_df <- star_df %>%
 # Basic plot.
 ggplot(data = star_clean_df) +
   geom_point(mapping = aes(x = sugar_g, y = calories))
-
-
-
-
-  
-  
-  
-
-
-
