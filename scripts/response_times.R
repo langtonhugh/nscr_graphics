@@ -98,7 +98,7 @@ citpol_provs_only_df <- citpol_pd_provs_df %>%
   mutate(regio_naam = factor(regio_naam)) # removes the empty factor level.
 
 # Main line plot.
-line_plots_list <- ggplot(data = citpol_provs_only_df) +
+line_plots <- ggplot(data = citpol_provs_only_df) +
   geom_ribbon(mapping = aes(x = perioden,
                               group = regio_naam,
                               ymax = pol_niet_snel_est+pol_niet_snel_ci,
@@ -143,38 +143,62 @@ prov_sf <- st_transform(prov_sf, crs = 28992)
 # Plot gemoetry.
 # plot(st_geometry(prov_sf))
 
-# Remove water polygons, leaving the 12 provinces.
+# Remove water polygons, leaving the 12 provinces. Relevel the factor to match order of line plots.
 prov_clean_sf <- prov_sf %>% 
   filter(type_1 != "Water body") %>% 
-  rename(province = name_1)
+  rename(province = name_1) %>% 
+  mutate(province = fct_relevel(province, levels(citpol_provs_only_df$regio_naam)))
 
 # Plot gemoetries to check it worked.
 # plot(st_geometry(prov_sf), col = "blue")
 # plot(st_geometry(prov_clean_sf), add = T, col = "darkgreen")
 
 # Split sf into list by province.
-prov_clean_list <- prov_clean_sf %>% 
-  mutate(province = fct_relevel(province, names(line_plots_list))) %>% 
+prov_clean_list <- prov_clean_sf %>%
+  mutate(province = fct_relevel(province, levels(citpol_provs_only_df$regio_naam))) %>%
   group_split(province)
+
+# Create nationwide template for the facet.
+# nl_sf <- prov_clean_sf %>%
+#   select(-province)  # This helps it ignore the facet wrap.
+# 
+# # Create map for each province.
+# maps_sf <- ggplot() +
+#   geom_sf(data = nl_sf, colour = "black", fill = "snow", size = 0.1, alpha = 0.2) +
+#   geom_sf(data = prov_clean_sf, mapping = aes(fill = province), fill = "black", colour = "black", alpha = 0.2) +
+#   facet_wrap(~province) +
+#   theme_void() +
+#   theme(strip.text = element_blank())
+
+
+# myplots3 <- prov_clean_sf %>% 
+#   split(ceiling(group_indices(.,province)/12)) %>% 
+#   map(~ggplot() +
+#         # geom_sf(data = nl_sf, colour = "black", fill = "snow", size = 0.1) +
+#         geom_sf(data = prov_clean_sf, mapping = aes(fill = province), fill = "black", colour = "black") +
+#         facet_wrap(~province) +
+#         theme_void() +
+#         theme(strip.text = element_blank()))
 
 # Create map for each province.
 maps_list <- lapply(prov_clean_list, function(x){
   ggplot() +
     geom_sf(data = prov_clean_sf, colour = "black", fill = "snow", size = 0.1) +
     geom_sf(data = x, fill = "black", colour = "black") +
-    theme_bw()
+    theme_void() +
+    coord_sf(xlim = c(13895.64, 277998.5), ylim = c(303925.3, 619270.2), expand = FALSE) +
+    theme(strip.text = element_blank())
 })
 
 # Add names.
-names(maps_list) <- names(line_plots_list)
-
-# Create cow.
+# names(maps_list) <- names(line_plots_list)
 maps_list_cow  <- plot_grid(plotlist = maps_list, nrow = 3, scale = 0.2)
+                            
 
 # Arrange.
 main_plot <- ggdraw() +
-  draw_plot(line_plots_list) +
-  draw_plot(maps_list_cow, x = 0.07, y = 0.125) 
+  draw_plot(line_plots) +
+  draw_plot(maps_list_cow, x = 0.07, y = 0.125)
 
 # Load logo.
 nscr_logo <- readPNG(here("static/img/logos/nscr_logo_snow.png"))
