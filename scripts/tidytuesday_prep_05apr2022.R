@@ -29,20 +29,6 @@ fire_wide1_df <- fire_clean_df %>%
   group_by(cal_year, animal_group_broad) %>% 
   summarise(yearly_count = n()) %>% 
   pivot_wider(names_from = cal_year, values_from = yearly_count)
-  
-# Plot the following. It's difficult without the pivot_longer, right?
-fire_wide1_df %>% 
-  pivot_longer(cols = -animal_group_broad, names_to = "cal_year", values_to = "counts") %>% 
-  ggplot(data = .) +
-  geom_line(mapping = aes(y = counts, x = cal_year, group = animal_group_broad, colour = animal_group_broad))
-
-# So first, we need to pivot_longer.
-pivot_long1_df <- fire_wide1_df %>% 
-  pivot_longer(cols = -animal_group_broad, names_to = "cal_year", values_to = "counts")
-
-# Then the plot is easy.
-ggplot(data = pivot_long1_df) +
-  geom_line(mapping = aes(y = counts, x = cal_year, group = animal_group_broad, colour = animal_group_broad))
 
 # A non-longitudinal example. Note the fiddly way of keeping zero counts. Requires
 # an ungroup() and then complete(). There might be a better way of doing this!
@@ -55,22 +41,6 @@ fire_wide2_df <- fire_clean_df %>%
   complete(animal_group_broad, property_category, fill = list(yearly_count = 0)) %>% 
   pivot_wider(names_from = property_category, values_from = yearly_count)
 
-# Bar chart of these counts? Difficult...
-fire_wide2_df %>% 
-  pivot_longer(cols = -animal_group_broad, names_to = "property_category", values_to = "yearly_count") %>% 
-  ggplot(data = .) +
-  facet_wrap(~property_category) + # optional
-  geom_col(mapping = aes(x = animal_group_broad, y = yearly_count)) 
-
-# So first, we pivot from wide to long.
-fire_long2_df <- fire_wide2_df %>% 
-  pivot_longer(cols = -animal_group_broad, names_to = "property_category", values_to = "yearly_count") 
-
-# Then we can make either plot fairly easily.
-ggplot(data = fire_long2_df) +
-  facet_wrap(~property_category) + # optional
-  geom_col(mapping = aes(x = animal_group_broad, y = yearly_count))
-
 # Nested data / multilevel example.
 fire_wards_df <- fire_clean_df %>%
   group_by(borough_code, ward_code, cal_year) %>% 
@@ -82,13 +52,11 @@ fire_wards_df <- fire_clean_df %>%
 # Make wide for example, fill in zeros and arrange.
 # Why interesting? Because it's nested levels, longitudinal and 'year' in
 # the var names.
-fire_wards_wide_df <- fire_wards_df %>% 
+fire_wide3_df <- fire_wards_df %>% 
   arrange(cal_year) %>% 
   pivot_wider(names_from = cal_year, values_from = yearly_count, names_prefix = "year_") %>% 
   mutate_if(is.numeric, ~replace_na(., 0)) %>% 
   arrange(ward_code) 
 
-# Pivot long.
-fire_wards_long_df <- fire_wards_wide_df %>% 
-  pivot_longer(cols = year_2009:year_2020, values_to = "yearly_counts", names_to = "cal_year", names_prefix = "year_")  %>% 
-  arrange(ward_code, cal_year)
+# Remove things that might confuse people.
+rm(fire_clean_df, fire_df, tt_df, fire_wards_df)

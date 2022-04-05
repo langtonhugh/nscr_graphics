@@ -1,20 +1,43 @@
-# Load packages.
+---
+title: "long and wide data"
+author: "Sam Langton"
+date: "05/04/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
+```
+
+## Packages load
+
+```{r}
 library(tidytuesdayR)
 library(dplyr)
 library(tidyr)
 library(forcats)
 library(ggplot2)
+```
 
+## Setup
+
+```{r, eval = F}
 # Identify datasets available (fire service data).
-# tt_df <- tidytuesdayR::tt_load("2021-06-29")
+tt_df <- tidytuesdayR::tt_load("2021-06-29")
 
 # Pull out the data.
-# fire_df <- tt_df$animal_rescues
+fire_df <- tt_df$animal_rescues
+```
 
-# Save for train working.
+```{r trainonly, echo = FALSE}
+# Load/save for train working.
 # save.image("data/train_working.Rdata")
 load("data/train_working.Rdata")
+```
 
+## Example 1
+
+```{r}
 # Basic cleaning.
 fire_clean_df <- fire_df %>% 
   filter(cal_year < 2021) %>% 
@@ -29,13 +52,24 @@ fire_wide1_df <- fire_clean_df %>%
   group_by(cal_year, animal_group_broad) %>% 
   summarise(yearly_count = n()) %>% 
   pivot_wider(names_from = cal_year, values_from = yearly_count)
-  
+
+# Show.
+fire_wide1_df
+```
+
+Plot the following. It's difficult with wide data (see above), right?
+
+```{r, echo = FALSE}
 # Plot the following. It's difficult without the pivot_longer, right?
 fire_wide1_df %>% 
   pivot_longer(cols = -animal_group_broad, names_to = "cal_year", values_to = "counts") %>% 
   ggplot(data = .) +
   geom_line(mapping = aes(y = counts, x = cal_year, group = animal_group_broad, colour = animal_group_broad))
+```
 
+This is where long data comes in.
+
+```{r}
 # So first, we need to pivot_longer.
 pivot_long1_df <- fire_wide1_df %>% 
   pivot_longer(cols = -animal_group_broad, names_to = "cal_year", values_to = "counts")
@@ -43,7 +77,11 @@ pivot_long1_df <- fire_wide1_df %>%
 # Then the plot is easy.
 ggplot(data = pivot_long1_df) +
   geom_line(mapping = aes(y = counts, x = cal_year, group = animal_group_broad, colour = animal_group_broad))
+```
 
+## Example 2
+
+```{r}
 # A non-longitudinal example. Note the fiddly way of keeping zero counts. Requires
 # an ungroup() and then complete(). There might be a better way of doing this!
 fire_wide2_df <- fire_clean_df %>% 
@@ -55,13 +93,35 @@ fire_wide2_df <- fire_clean_df %>%
   complete(animal_group_broad, property_category, fill = list(yearly_count = 0)) %>% 
   pivot_wider(names_from = property_category, values_from = yearly_count)
 
+# Show.
+fire_wide2_df
+```
+
+Try making the below bar plot with the wide data above. Again, not easy.
+
+```{r, echo = FALSE}
 # Bar chart of these counts? Difficult...
 fire_wide2_df %>% 
   pivot_longer(cols = -animal_group_broad, names_to = "property_category", values_to = "yearly_count") %>% 
   ggplot(data = .) +
   facet_wrap(~property_category) + # optional
-  geom_col(mapping = aes(x = animal_group_broad, y = yearly_count)) 
+  geom_col(mapping = aes(x = animal_group_broad, y = yearly_count))
+```
 
+Or even something simplier with the same wide data.
+
+```{r, echo = FALSE}
+# Bar chart of these counts? Difficult...
+fire_wide2_df %>% 
+  pivot_longer(cols = -animal_group_broad, names_to = "property_category", values_to = "yearly_count") %>% 
+  ggplot(data = .) +
+  # facet_wrap(~property_category) + # optional
+  geom_col(mapping = aes(x = animal_group_broad, y = yearly_count))
+```
+
+Again, a `pivot_longer()` makes this straightforward.
+
+```{r}
 # So first, we pivot from wide to long.
 fire_long2_df <- fire_wide2_df %>% 
   pivot_longer(cols = -animal_group_broad, names_to = "property_category", values_to = "yearly_count") 
@@ -70,7 +130,11 @@ fire_long2_df <- fire_wide2_df %>%
 ggplot(data = fire_long2_df) +
   facet_wrap(~property_category) + # optional
   geom_col(mapping = aes(x = animal_group_broad, y = yearly_count))
+```
 
+## Example 3
+
+```{r}
 # Nested data / multilevel example.
 fire_wards_df <- fire_clean_df %>%
   group_by(borough_code, ward_code, cal_year) %>% 
@@ -88,7 +152,23 @@ fire_wards_wide_df <- fire_wards_df %>%
   mutate_if(is.numeric, ~replace_na(., 0)) %>% 
   arrange(ward_code) 
 
+# Show.
+fire_wards_wide_df
+```
+
+Pivot long makes this better for handling, visuals and multilevel (longitudinal) analysis.
+
+```{r}
 # Pivot long.
 fire_wards_long_df <- fire_wards_wide_df %>% 
   pivot_longer(cols = year_2009:year_2020, values_to = "yearly_counts", names_to = "cal_year", names_prefix = "year_")  %>% 
   arrange(ward_code, cal_year)
+
+# Show. 
+fire_wards_long_df
+```
+
+
+
+
+
