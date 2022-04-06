@@ -1,0 +1,81 @@
+---
+title: 'NWO-NSCR R courses: survey results'
+author: "NSC-R workshop team"
+date: "6 April 2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = F, warning = F)
+```
+
+```{r handling}
+# Load packages.
+library(readr)
+library(dplyr)
+library(tidyr)
+library(forcats)
+library(stringr)
+library(ggplot2)
+
+# Load data.
+results_df <- read_csv("data/NSCR_survey_Rcourses_06apr2022.csv")
+
+# Initial clean.
+results_clean_df <- results_df %>% 
+  rename(courses = 2, dates = 3, timestamp = Timestamp) %>% 
+  mutate(id = 1:nrow(.)) 
+
+# Split into dates and courses df for ease. Split rows. Bit of tidying up.
+
+# First courses.
+results_courses_df <- results_clean_df %>% 
+  select(id, courses) %>% 
+  separate_rows(courses, sep = ";") %>% 
+  mutate(courses_simple = if_else(str_detect(courses, "Reproducible"),
+                                  "R for Reproducible Scientific Analysis",
+                                  courses),
+         courses_simple = if_else(str_detect(courses, "Geospatial"),
+                                  "Intro to R for Geospatial Data",
+                                  courses_simple),
+         courses_simple = if_else(str_detect(courses, "Visualization"),
+                                  "Data Analysis and Visualization with R",
+                                  courses_simple))
+# Then dates.
+results_dates_df <- results_clean_df %>% 
+  select(id, dates) %>% 
+  separate_rows(dates, sep = ";") %>% 
+  mutate(months = str_remove_all(dates, " 2022"),
+         months = fct_relevel(months, c(month.name[5:12], "None of the above.")))
+```
+
+<b> 
+
+We had `r nrow(results_clean_df)` responses, but four of these were tests, leaving `r nrow(results_clean_df)-4` legitimate responses for the results presented below.
+
+Respondents could select more than one answer.
+
+```{r results, out.width="900px"}
+# Courses preferences. Compute counts first so that we can subtract the four tests.
+results_courses_df %>% 
+  group_by(courses_simple) %>% 
+  summarise(counts = n()-4) %>% 
+  ggplot(data = .) +
+  geom_col(mapping = aes(x = courses_simple, y = counts), fill = "#B1005D") +
+  labs(title = "Course preferences (frequency counts)",
+       x = NULL, y = NULL) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 7) ) +
+  coord_flip()
+
+# Dates preferences. Same with the counts.
+results_dates_df %>% 
+  group_by(months) %>% 
+  summarise(counts = n()-4) %>% 
+  ggplot(data = .) +
+  geom_col(mapping = aes(x = months, y = counts), fill = "#B1005D") +
+  labs(title = "Date preferences (frequency counts)",
+       x = NULL, y = NULL) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 7) ) 
+```
