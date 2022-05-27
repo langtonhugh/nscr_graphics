@@ -1,5 +1,6 @@
 # Data
 data/*
+!data/detroit_cfs.csv
 
 # History files
 .Rhistory
