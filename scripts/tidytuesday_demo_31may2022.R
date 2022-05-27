@@ -3,7 +3,7 @@ library(readr)
 library(lubridate)  
 
 # Load data directly. You need the internet for this!
-detroit_df <- read_csv("https://github.com/langtonhugh/nscr_graphics/raw/main/data/detroit_cfs.csv")
+detroit_df <- read_csv("https://github.com/langtonhugh/nscr_graphics/raw/main/data/detroit_calls.csv")
 
 # Explore data.
 glimpse(detroit_df)
@@ -23,11 +23,3 @@ shots_desc_df <- shots_df %>%
             Mean   = mean(traveltime),
             Median = median(traveltime),
             SD     = sd(traveltime))
-
-
-
-
-
-
-
-
