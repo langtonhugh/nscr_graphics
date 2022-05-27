@@ -1,6 +1,7 @@
 # Load libraries.
 library(readr)
 library(dplyr)
+library(tidyr)
 library(lubridate)
 
 # Load raw data.
@@ -15,4 +16,14 @@ detroit_2022_df <- detroit_df %>%
          calldescription, call_timestamp, intaketime:totaltime)
 
 # Save.
+write_csv(detroit_2022_df, file = "data/detroit_cfs.csv")
+
+# Quick change to drop missings.
+detroit_2022_df <- read_csv("data/detroit_cfs.csv")
+
+# Drop missing times we want for the demo.
+detroit_2022_df <- detroit_2022_df %>% 
+  drop_na(traveltime, time_on_scene) # !!! 
+
+# Savea again. Overwrite the old one.
 write_csv(detroit_2022_df, file = "data/detroit_cfs.csv")
