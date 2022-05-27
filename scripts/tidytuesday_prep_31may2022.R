@@ -26,4 +26,4 @@ detroit_2022_df <- detroit_2022_df %>%
   drop_na(traveltime, time_on_scene) # !!! 
 
 # Savea again. Overwrite the old one.
-write_csv(detroit_2022_df, file = "data/detroit_cfs.csv")
+write_csv(detroit_2022_df, file = "data/detroit_calls.csv")
