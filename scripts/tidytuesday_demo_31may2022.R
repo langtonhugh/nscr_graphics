@@ -1,6 +1,8 @@
 # Load libraries.
-library(readr)      
-library(lubridate)  
+library(readr) 
+library(dplyr)
+library(lubridate) 
+library(ggplot2) 
 
 # Load data directly. You need the internet for this!
 detroit_df <- read_csv("https://github.com/langtonhugh/nscr_graphics/raw/main/data/detroit_calls.csv")
@@ -23,3 +25,12 @@ shots_desc_df <- shots_df %>%
             Mean   = mean(traveltime),
             Median = median(traveltime),
             SD     = sd(traveltime))
+# Hourly trends.
+shots_df %>% 
+  mutate(time_hours = hour(call_timestamp)) %>% 
+  group_by(time_hours) %>% 
+  tally() %>% 
+  ggplot(data = .) +
+  geom_line(mapping = aes(x = time_hours, y = n)) +
+  geom_point(mapping = aes(x = time_hours, y = n))
+

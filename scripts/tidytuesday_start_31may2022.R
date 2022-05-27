@@ -1,5 +1,6 @@
 # Load libraries.
 library(readr)      # Loading in data
+library(dplyr)      # Loading in data
 library(lubridate)  # Dealing with dates
 
 # Load data directly. You need the internet for this!
